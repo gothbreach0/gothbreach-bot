@@ -6,42 +6,50 @@
     <title>GothBreachAI</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
-        .app { max-width: 480px; margin: 0 auto; padding: 16px; padding-bottom: 100px; }
-        .header { text-align: center; padding: 20px 0; border-bottom: 1px solid #222; margin-bottom: 16px; }
-        .header h1 { font-size: 22px; background: linear-gradient(135deg, #ff006e, #8338ec); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; position: sticky; top: 0; background: #0a0a0a; z-index: 10; }
-        .tab { padding: 8px 14px; border-radius: 20px; background: #1a1a1a; border: 1px solid #333; cursor: pointer; white-space: nowrap; font-size: 12px; }
-        .tab.active { background: #8338ec; border-color: #8338ec; }
-        .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .card { background: #1a1a1a; border-radius: 16px; padding: 10px; cursor: pointer; border: 2px solid transparent; }
-        .card.selected { border-color: #8338ec; }
-        .card-img { width: 100%; aspect-ratio: 2/3; border-radius: 12px; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 36px; margin-bottom: 6px; }
-        .card-name { font-size: 13px; font-weight: bold; margin-bottom: 2px; }
-        .card-desc { font-size: 10px; color: #999; line-height: 1.2; }
-        .btn { display: block; width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 12px; }
-        .btn-primary { background: linear-gradient(135deg, #ff006e, #8338ec); color: #fff; }
-        .btn-secondary { background: #2a2a2a; color: #fff; border: 1px solid #444; }
-        .btn-small { padding: 8px 12px; font-size: 12px; border-radius: 8px; }
-        .page { display: none; }
-        .page.active { display: block; }
-        .sit-card { background: #1a1a1a; border-radius: 12px; padding: 12px; margin-bottom: 6px; cursor: pointer; border: 2px solid transparent; }
-        .sit-card.selected { border-color: #8338ec; }
-        .sit-card .sit-name { font-size: 14px; font-weight: bold; }
-        .album-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-        .album-item { aspect-ratio: 1; background: #1a1a1a; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        .stat-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #222; }
-        .stat-bar { height: 8px; background: #8338ec; border-radius: 4px; margin-top: 4px; }
-        .shop-item { background: #1a1a1a; border-radius: 12px; padding: 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #222; }
-        .toggle { width: 48px; height: 26px; background: #333; border-radius: 13px; cursor: pointer; position: relative; }
-        .toggle.on { background: #8338ec; }
-        .toggle::after { content: ''; width: 22px; height: 22px; background: #fff; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.2s; }
-        .toggle.on::after { left: 24px; }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;overflow-x:hidden}
+        #particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+        .app{max-width:480px;margin:0 auto;padding:16px;position:relative;z-index:1}
+        .header{text-align:center;padding:20px 0;border-bottom:1px solid #222;margin-bottom:16px}
+        .header h1{font-size:24px;background:linear-gradient(135deg,#ff006e,#8338ec);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:pulse 2s infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
+        .tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px;position:sticky;top:0;background:#0a0a0a;z-index:10}
+        .tab{padding:8px 14px;border-radius:20px;background:#1a1a1a;border:1px solid #333;cursor:pointer;white-space:nowrap;font-size:12px;transition:0.3s}
+        .tab.active{background:#8338ec;border-color:#8338ec;transform:scale(1.05)}
+        .cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .card{background:#1a1a1a;border-radius:16px;padding:10px;cursor:pointer;border:2px solid transparent;transition:0.3s;position:relative;overflow:hidden}
+        .card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(131,56,236,0.3)}
+        .card.selected{border-color:#8338ec;box-shadow:0 0 20px rgba(131,56,236,0.5)}
+        .card-img{width:100%;aspect-ratio:2/3;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:6px;position:relative;overflow:hidden}
+        .card-img::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 30%,rgba(255,255,255,0.1),transparent 70%)}
+        .card-name{font-size:13px;font-weight:bold;margin-bottom:2px}
+        .card-desc{font-size:10px;color:#999;line-height:1.2}
+        .btn{display:block;width:100%;padding:14px;border-radius:12px;border:none;font-size:15px;font-weight:bold;cursor:pointer;margin-top:12px;transition:0.3s}
+        .btn-primary{background:linear-gradient(135deg,#ff006e,#8338ec);color:#fff}
+        .btn-primary:active{transform:scale(0.96)}
+        .btn-secondary{background:#2a2a2a;color:#fff;border:1px solid #444}
+        .page{display:none;animation:slideIn 0.3s ease}
+        .page.active{display:block}
+        @keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+        .sit-card{background:#1a1a1a;border-radius:12px;padding:12px;margin-bottom:6px;cursor:pointer;border:2px solid transparent;transition:0.2s}
+        .sit-card.selected{border-color:#8338ec;background:#1e1030}
+        .sit-card .sit-name{font-size:14px;font-weight:bold}
+        .album-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+        .album-item{aspect-ratio:1;background:#1a1a1a;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;transition:0.2s}
+        .album-item:hover{transform:scale(1.05)}
+        .stat-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #222}
+        .shop-item{background:#1a1a1a;border-radius:12px;padding:14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+        .setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #222}
+        .toggle{width:48px;height:26px;background:#333;border-radius:13px;cursor:pointer;position:relative;transition:0.3s}
+        .toggle.on{background:#8338ec}
+        .toggle::after{content:'';width:22px;height:22px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:0.3s}
+        .toggle.on::after{left:24px}
+        .heart{position:fixed;pointer-events:none;font-size:24px;animation:floatUp 1s ease-out forwards;z-index:100}
+        @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-100px) scale(0.5)}}
     </style>
 </head>
 <body>
+    <canvas id="particles"></canvas>
     <div class="app" id="app">
         <div class="header"><h1>🔮 GothBreachAI</h1></div>
         <div class="tabs" id="tabs">
@@ -64,16 +72,52 @@
         const store = JSON.parse(localStorage.getItem('gba_store') || '{"coins":100,"album":[],"stats":{},"settings":{"dark":true,"vibrate":false},"inventory":[]}');
         function save() { localStorage.setItem('gba_store', JSON.stringify(store)); }
 
+        // Частицы на фоне
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const particles = [];
+        for (let i = 0; i < 30; i++) {
+            particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 1, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 });
+        }
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(131,56,236,0.15)'; ctx.fill();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // Сердечки
+        function spawnHearts(x, y, count = 5) {
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const heart = document.createElement('div');
+                    heart.className = 'heart';
+                    heart.textContent = ['❤️', '💜', '💖', '🔥', '💕'][Math.floor(Math.random() * 5)];
+                    heart.style.left = (x + Math.random() * 40 - 20) + 'px';
+                    heart.style.top = (y + Math.random() * 20 - 10) + 'px';
+                    document.body.appendChild(heart);
+                    setTimeout(() => heart.remove(), 1000);
+                }, i * 50);
+            }
+        }
+
         const PARTNERS = {
-            kira:{emoji:"🖤",name:"Кира",desc:"Панк-рокерша, 24 года. Дерзкая.",img:"🖤"},
-            alisa:{emoji:"🎀",name:"Алиса",desc:"Студентка, 19 лет. Рыжая.",img:"🎀"},
-            valeria:{emoji:"💋",name:"Валерия",desc:"Бизнес-леди, 38 лет.",img:"💋"},
-            dasha:{emoji:"💉",name:"Даша",desc:"Медсестра, 25 лет.",img:"💉"},
-            margo:{emoji:"⛓️",name:"Марго",desc:"Доминатрикс, 30 лет.",img:"⛓️"},
-            zara:{emoji:"🔥",name:"Зара",desc:"Танцовщица, 27 лет.",img:"🔥"},
-            katya:{emoji:"🎮",name:"Катя",desc:"Стримерша, 21 год.",img:"🎮"},
-            lolita:{emoji:"💎",name:"Лолита",desc:"Порно-звезда, 29 лет.",img:"💎"},
-            diana:{emoji:"🦋",name:"Диана",desc:"Искусительница, 19 лет.",img:"🦋"}
+            kira:{emoji:"🖤",name:"Кира",desc:"Панк-рокерша, 24 года.",img:"🖤",bg:"#1a0a0a"},
+            alisa:{emoji:"🎀",name:"Алиса",desc:"Студентка, 19 лет.",img:"🎀",bg:"#0a1a0a"},
+            valeria:{emoji:"💋",name:"Валерия",desc:"Бизнес-леди, 38 лет.",img:"💋",bg:"#1a0a1a"},
+            dasha:{emoji:"💉",name:"Даша",desc:"Медсестра, 25 лет.",img:"💉",bg:"#0a0a1a"},
+            margo:{emoji:"⛓️",name:"Марго",desc:"Доминатрикс, 30 лет.",img:"⛓️",bg:"#1a1a0a"},
+            zara:{emoji:"🔥",name:"Зара",desc:"Танцовщица, 27 лет.",img:"🔥",bg:"#1a0a0a"},
+            katya:{emoji:"🎮",name:"Катя",desc:"Стримерша, 21 год.",img:"🎮",bg:"#0a1a1a"},
+            lolita:{emoji:"💎",name:"Лолита",desc:"Порно-звезда, 29 лет.",img:"💎",bg:"#1a1a1a"},
+            diana:{emoji:"🦋",name:"Диана",desc:"Искусительница, 19 лет.",img:"🦋",bg:"#0a0a0a"}
         };
         const SITUATIONS = {kira:["После концерта","В гараже","В баре","Тату-салон","Под дождём","На крыше"],alisa:["В библиотеке","В лифте","Репетитор","Экзамен","Ночной кинотеатр","В парке осенью"],valeria:["Собеседование","В душе","В опере","Спа-салон","Бизнес-ужин","Примерочная"],dasha:["Ночное дежурство","Осмотр","В скорой","Процедурный кабинет","После смены","Медицинский осмотр на дому"],margo:["Посвящение","Сломанный стул","Инструктаж","Тронный зал","Клетка","Псарня"],zara:["Приватный танец","Карнавал","Репетиция","Пляж на закате","Фотосессия","После шоу"],katya:["Донат на стриме","Косплей","Хоррор","Комната отдыха","Игровой турнир","Ночной стрим"],lolita:["Кастинг","Встреча с фанатом","Стиральщик","Бассейн","Лимузин","Секс-шоп"],diana:["Аукцион","Мастер-класс","Отель","Посольский приём","Картинная галерея","Яхта"]};
         const DIFFICULTIES=[{key:"passion",name:"🔥 Страсть",desc:"Шкала до 500"},{key:"easy",name:"💛 Упрощённый",desc:"×2 доверие"},{key:"normal",name:"📖 Обычный",desc:"Классика"}];
@@ -81,37 +125,29 @@
         let sp=null,ss=0,sd="passion";
 
         function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
-        function renderCharacters(){let h='<h2 style="margin-bottom:10px;">👩‍🦰 Выбери девушку</h2><div class="cards">';for(let[k,p]of Object.entries(PARTNERS))h+=`<div class="card ${sp===k?'selected':''}" onclick="selectPartner('${k}')"><div class="card-img">${p.img}</div><div class="card-name">${p.emoji} ${p.name}</div><div class="card-desc">${p.desc}</div></div>`;h+='</div>';if(sp)h+='<button class="btn btn-primary" onclick="goToSituations()">Далее →</button>';document.getElementById('page-characters').innerHTML=h;}
-        function selectPartner(k){sp=k;renderCharacters();}
+        function renderCharacters(){let h='<h2>👩‍🦰 Выбери девушку</h2><div class="cards">';for(let[k,p]of Object.entries(PARTNERS))h+=`<div class="card ${sp===k?'selected':''}" onclick="selectPartner('${k}',event)" style="background:${p.bg}"><div class="card-img">${p.img}</div><div class="card-name">${p.emoji} ${p.name}</div><div class="card-desc">${p.desc}</div></div>`;h+='</div>';if(sp)h+='<button class="btn btn-primary" onclick="goToSituations()">Далее →</button>';document.getElementById('page-characters').innerHTML=h;}
+        function selectPartner(k,e){sp=k;if(e)spawnHearts(e.clientX,e.clientY,8);renderCharacters();}
         function goToSituations(){if(!sp)return;showPage('page-situations');renderSituations();}
-        function renderSituations(){let s=SITUATIONS[sp]||[],h=`<h2>🎬 Ситуация</h2><p style="color:#999;margin-bottom:10px;">${PARTNERS[sp].emoji} ${PARTNERS[sp].name}</p>`;s.forEach((n,i)=>{h+=`<div class="sit-card ${ss===i?'selected':''}" onclick="selectSituation(${i})"><div class="sit-name">${n}</div></div>`;});h+='<button class="btn btn-secondary" onclick="showPage(\'page-characters\');renderCharacters();" style="margin-top:8px;">← Назад</button><button class="btn btn-primary" onclick="goToDifficulty()">Далее →</button>';document.getElementById('page-situations').innerHTML=h;}
-        function selectSituation(i){ss=i;renderSituations();}
+        function renderSituations(){let s=SITUATIONS[sp]||[],h=`<h2>🎬 Ситуация</h2><p style="color:#999;">${PARTNERS[sp].emoji} ${PARTNERS[sp].name}</p>`;s.forEach((n,i)=>{h+=`<div class="sit-card ${ss===i?'selected':''}" onclick="selectSituation(${i},event)"><div class="sit-name">${n}</div></div>`});h+='<button class="btn btn-secondary" onclick="showPage(\'page-characters\');renderCharacters();">← Назад</button><button class="btn btn-primary" onclick="goToDifficulty()">Далее →</button>';document.getElementById('page-situations').innerHTML=h;}
+        function selectSituation(i,e){ss=i;if(e)spawnHearts(e.clientX,e.clientY,3);renderSituations();}
         function goToDifficulty(){showPage('page-difficulty');renderDifficulty();}
-        function renderDifficulty(){let h='<h2>⚙️ Сложность</h2>';DIFFICULTIES.forEach(d=>{h+=`<div class="sit-card ${sd===d.key?'selected':''}" onclick="selectDifficulty('${d.key}')"><div class="sit-name">${d.name}</div><div style="font-size:11px;color:#999;">${d.desc}</div></div>`;});h+='<button class="btn btn-secondary" onclick="goToSituations()" style="margin-top:8px;">← Назад</button><button class="btn btn-primary" onclick="startScene()">🔥 Начать сцену!</button>';document.getElementById('page-difficulty').innerHTML=h;}
+        function renderDifficulty(){let h='<h2>⚙️ Сложность</h2>';DIFFICULTIES.forEach(d=>{h+=`<div class="sit-card ${sd===d.key?'selected':''}" onclick="selectDifficulty('${d.key}')"><div class="sit-name">${d.name}</div><div style="font-size:11px;color:#999;">${d.desc}</div></div>`});h+='<button class="btn btn-secondary" onclick="goToSituations()">← Назад</button><button class="btn btn-primary" onclick="startScene()">🔥 Начать сцену!</button>';document.getElementById('page-difficulty').innerHTML=h;}
         function selectDifficulty(k){sd=k;renderDifficulty();}
         function startScene(){if(!sp)return;tg.sendData(JSON.stringify({action:"start_scene",partner:sp,situation:ss,difficulty:sd}));tg.close();}
 
-        // Альбом
-        function renderAlbum(){let a=store.album,h='<h2>🖼️ Альбом</h2>';if(!a.length){h+='<p style="color:#666;text-align:center;padding:40px;">📭 Пусто</p>';}else{h+='<div class="album-grid">';a.forEach((f,i)=>{h+=`<div class="album-item" onclick="removeFromAlbum(${i})">📸</div>`;});h+='</div><p style="color:#666;font-size:11px;margin-top:8px;">Нажми чтобы удалить</p>';}document.getElementById('page-album').innerHTML=h;}
+        // Альбом, статистика, магазин, настройки (как в предыдущей версии)
+        function renderAlbum(){let a=store.album,h='<h2>🖼️ Альбом</h2>';if(!a.length)h+='<p style="color:#666;text-align:center;padding:40px;">📭 Пусто</p>';else{h+='<div class="album-grid">';a.forEach((f,i)=>{h+=`<div class="album-item" onclick="removeFromAlbum(${i})">📸</div>`});h+='</div>';}document.getElementById('page-album').innerHTML=h;}
         function removeFromAlbum(i){store.album.splice(i,1);save();renderAlbum();}
+        function renderStats(){let s=store.stats,h='<h2>📊 Статистика</h2>';if(!Object.keys(s).length)h+='<p style="color:#666;text-align:center;padding:40px;">Нет данных</p>';else{let t=0,o=0;for(let[k,v]of Object.entries(s)){t+=v.scenes||0;o+=v.orgasms||0;}h+=`<div class="stat-row"><span>🔥 Сцен</span><span>${t}</span></div><div class="stat-row"><span>💦 Оргазмов</span><span>${o}</span></div><div class="stat-row"><span>🪙 Монет</span><span>${store.coins}</span></div><div class="stat-row"><span>🖼️ Альбом</span><span>${store.album.length}</span></div>`;}document.getElementById('page-stats').innerHTML=h;}
+        const SHOP=[{id:"s1",name:"Эксклюзивная ситуация",price:50},{id:"s2",name:"Новый голос",price:30},{id:"s3",name:"Бонусная поза",price:20}];
+        function renderShop(){let h='<h2>🛒 Магазин</h2><p>🪙 '+store.coins+'</p>';SHOP.forEach(item=>{let o=store.inventory.includes(item.id);h+=`<div class="shop-item"><div><b>${item.name}</b></div>${o?'<span style="color:#4CAF50;">✓</span>':'<button class="btn btn-primary" style="width:auto;padding:6px 12px;font-size:12px;margin:0" onclick="buy(\''+item.id+'\','+item.price+')">'+item.price+' 🪙</button>'}</div>`});document.getElementById('page-shop').innerHTML=h;}
+        function buy(id,p){if(store.coins<p)return alert('Мало монет!');store.coins-=p;store.inventory.push(id);save();renderShop();renderStats();}
+        function renderSettings(){let h='<h2>⚙️ Настройки</h2>';h+=`<div class="setting-row"><span>🌙 Тёмная</span><div class="toggle ${store.settings.dark?'on':''}" onclick="tog('dark')"></div></div>`;h+=`<div class="setting-row"><span>📳 Вибрация</span><div class="toggle ${store.settings.vibrate?'on':''}" onclick="tog('vibrate')"></div></div>`;h+='<button class="btn btn-secondary" onclick="resetAll()">🔄 Сбросить</button>';document.getElementById('page-settings').innerHTML=h;}
+        function tog(k){store.settings[k]=!store.settings[k];save();renderSettings();}
+        function resetAll(){if(confirm('Сбросить?')){store.coins=100;store.album=[];store.stats={};store.inventory=[];save();renderAlbum();renderStats();renderShop();renderSettings();}}
 
-        // Статистика
-        function renderStats(){let s=store.stats,h='<h2>📊 Статистика</h2>';if(!Object.keys(s).length){h+='<p style="color:#666;text-align:center;padding:40px;">Нет данных</p>';}else{let total=0,org=0;for(let[k,v]of Object.entries(s)){total+=v.scenes||0;org+=v.orgasms||0;}h+=`<div class="stat-row"><span>🔥 Всего сцен</span><span>${total}</span></div><div class="stat-row"><span>💦 Всего оргазмов</span><span>${org}</span></div><div class="stat-row"><span>🪙 Монет</span><span>${store.coins}</span></div><div class="stat-row"><span>🖼️ В альбоме</span><span>${store.album.length}</span></div>`;}document.getElementById('page-stats').innerHTML=h;}
-
-        // Магазин
-        const SHOP_ITEMS=[{id:"sit_exclusive",name:"Эксклюзивная ситуация",price:50,desc:"Новая ситуация для любого персонажа"},{id:"voice_extra",name:"Новый голос",price:30,desc:"Дополнительный голос для TTS"},{id:"pose_bonus",name:"Бонусная поза",price:20,desc:"Новая поза в шкалу оргазма"}];
-        function renderShop(){let h='<h2>🛒 Магазин</h2><p style="margin-bottom:10px;">🪙 Монет: '+store.coins+'</p>';SHOP_ITEMS.forEach(item=>{let owned=store.inventory.includes(item.id);h+=`<div class="shop-item"><div><div style="font-weight:bold;">${item.name}</div><div style="font-size:11px;color:#999;">${item.desc}</div></div>${owned?'<span style="color:#4CAF50;">✓</span>':'<button class="btn btn-small btn-primary" onclick="buyItem(\''+item.id+'\','+item.price+')">'+item.price+' 🪙</button>'}</div>`;});document.getElementById('page-shop').innerHTML=h;}
-        function buyItem(id,price){if(store.coins<price)return alert('Недостаточно монет!');if(store.inventory.includes(id))return;store.coins-=price;store.inventory.push(id);save();renderShop();renderStats();}
-
-        // Настройки
-        function renderSettings(){let h='<h2>⚙️ Настройки</h2>';h+=`<div class="setting-row"><span>🌙 Тёмная тема</span><div class="toggle ${store.settings.dark?'on':''}" onclick="toggleSetting('dark')"></div></div>`;h+=`<div class="setting-row"><span>📳 Вибрация</span><div class="toggle ${store.settings.vibrate?'on':''}" onclick="toggleSetting('vibrate')"></div></div>`;h+='<button class="btn btn-secondary" onclick="resetAll()" style="margin-top:16px;">🔄 Сбросить всё</button>';document.getElementById('page-settings').innerHTML=h;}
-        function toggleSetting(k){store.settings[k]=!store.settings[k];save();renderSettings();}
-        function resetAll(){if(confirm('Сбросить все данные?')){store.coins=100;store.album=[];store.stats={};store.inventory=[];save();renderAlbum();renderStats();renderShop();renderSettings();}}
-
-        // Вкладки
         document.querySelectorAll('.tab').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');let p=tab.dataset.page;showPage('page-'+p);if(p==='characters')renderCharacters();if(p==='album')renderAlbum();if(p==='stats')renderStats();if(p==='shop')renderShop();if(p==='settings')renderSettings();});});
-
-        renderCharacters(); renderAlbum(); renderStats(); renderShop(); renderSettings();
+        renderCharacters();renderAlbum();renderStats();renderShop();renderSettings();
     </script>
 </body>
 </html>
