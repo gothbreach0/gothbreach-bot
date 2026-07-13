@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>GothBreachAI</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="manifest" href="data:application/manifest+json,{"name":"GothBreachAI","short_name":"GothBreach","icons":[{"src":"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>","sizes":"any","type":"image/svg+xml"}],"start_url":"/gothbreach-bot/webapp.html","display":"standalone","background_color":"#0a0a0a","theme_color":"#8338ec"}">
     <meta name="theme-color" content="#8338ec">
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
@@ -77,25 +76,21 @@
         .chat-msg.user{background:#8338ec;text-align:right}
         .chat-input-row{display:flex;padding:8px;gap:8px}
         .chat-input-row input{flex:1;margin:0;padding:10px}
-        .install-banner{background:#1e1030;border:1px solid #8338ec;border-radius:12px;padding:12px;margin-bottom:16px;display:none;text-align:center}
-        .install-banner button{background:#8338ec;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;margin-top:8px}
         .wheel-container{text-align:center;margin:20px 0}
-        .wheel-btn{font-size:48px;cursor:pointer;animation:spin 0.5s ease-out}
-        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+        .wheel-btn{font-size:48px;cursor:pointer}
         .heatmap{position:relative;width:100%;aspect-ratio:2/3;background:#1a1a1a;border-radius:12px;overflow:hidden;margin-bottom:8px}
         .heat-dot{position:absolute;width:20px;height:20px;background:radial-gradient(circle,rgba(255,0,110,0.8),transparent);border-radius:50%;pointer-events:none;animation:fadeOut 3s forwards}
         @keyframes fadeOut{0%{opacity:1}100%{opacity:0}}
-        .video-bg{position:fixed;inset:0;object-fit:cover;z-index:-1;opacity:0.3}
         .lang-switch{display:flex;gap:8px;margin-bottom:12px}
         .lang-switch button{padding:6px 12px;border-radius:8px;border:1px solid #333;background:#1a1a1a;color:#fff;cursor:pointer}
         .lang-switch button.active{background:#8338ec}
+        .xp-bar{height:6px;background:#2a2a2a;border-radius:3px;margin-top:4px}
+        .xp-fill{height:100%;background:linear-gradient(135deg,#ff006e,#8338ec);border-radius:3px}
     </style>
 </head>
 <body>
-    <video class="video-bg" id="video-bg" autoplay loop muted playsinline></video>
     <canvas id="particles"></canvas>
     <div class="app" id="app">
-        <div class="install-banner" id="install-banner">📱 Установи как приложение!<button onclick="installPWA()">Установить</button></div>
         <div class="header"><h1>🔮 GothBreachAI</h1></div>
         <div class="tabs" id="tabs">
             <div class="tab active" data-page="characters">👩‍🦰</div>
@@ -103,6 +98,7 @@
             <div class="tab" data-page="stats">📊</div>
             <div class="tab" data-page="achievements">🏆</div>
             <div class="tab" data-page="daily">📅</div>
+            <div class="tab" data-page="quests">📜</div>
             <div class="tab" data-page="shop">🛒</div>
             <div class="tab" data-page="wheel">🎡</div>
             <div class="tab" data-page="settings">⚙️</div>
@@ -114,6 +110,7 @@
         <div class="page" id="page-stats"></div>
         <div class="page" id="page-achievements"></div>
         <div class="page" id="page-daily"></div>
+        <div class="page" id="page-quests"></div>
         <div class="page" id="page-shop"></div>
         <div class="page" id="page-wheel"></div>
         <div class="page" id="page-settings"></div>
@@ -126,111 +123,108 @@
             <button class="btn btn-primary" onclick="sendChat()">→</button>
         </div>
     </div>
-<script>
-    const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
-    const store = JSON.parse(localStorage.getItem('gba_store') || '{"coins":100,"album":[],"stats":{},"settings":{"dark":true,"vibrate":false,"lang":"ru"},"inventory":[],"achievements":{},"daily":{"date":"","tasks":[]},"level":1,"xp":0,"customPartners":[],"customSituations":{},"chatHistory":[],"heatmap":{},"records":{}}');
-    function save() { localStorage.setItem('gba_store', JSON.stringify(store)); }
+    <script>
+        const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
+        const store = JSON.parse(localStorage.getItem('gba_store') || '{"coins":100,"album":[],"stats":{},"settings":{"dark":true,"vibrate":false,"lang":"ru"},"inventory":[],"achievements":{},"daily":{"date":"","tasks":[]},"level":1,"xp":0,"customPartners":[],"customSituations":{},"chatHistory":[],"heatmap":{},"records":{"bestTime":0},"quests":{},"timer":{"start":null,"elapsed":0}}');
+        function save() { localStorage.setItem('gba_store', JSON.stringify(store)); }
 
-    // Языки
-    const LANG = {
-        ru: { characters:"👩‍🦰 Выбери девушку", situations:"🎬 Ситуация", difficulty:"⚙️ Сложность", start:"🔥 Начать сцену!", back:"← Назад", next:"Далее →", createPartner:"➕ Создать персонажа", createSituation:"➕ Создать ситуацию", album:"🖼️ Альбом", empty:"📭 Пусто", stats:"📊 Статистика", scenes:"🔥 Сцен", orgasms:"💦 Оргазмов", coins:"🪙 Монет", achievements:"🏆 Достижения", daily:"📅 Ежедневные задания", shop:"🛒 Магазин", settings:"⚙️ Настройки", dark:"🌙 Тёмная", vibrate:"📳 Вибрация", reset:"🔄 Сбросить", export:"📥 Экспорт (JSON)", wheel:"🎡 Колесо фортуны", spin:"Крутить!", chat:"💬 Чат", install:"📱 Установи как приложение!", installBtn:"Установить" },
-        en: { characters:"👩‍🦰 Choose a girl", situations:"🎬 Situation", difficulty:"⚙️ Difficulty", start:"🔥 Start Scene!", back:"← Back", next:"Next →", createPartner:"➕ Create Character", createSituation:"➕ Create Situation", album:"🖼️ Album", empty:"📭 Empty", stats:"📊 Statistics", scenes:"🔥 Scenes", orgasms:"💦 Orgasms", coins:"🪙 Coins", achievements:"🏆 Achievements", daily:"📅 Daily Tasks", shop:"🛒 Shop", settings:"⚙️ Settings", dark:"🌙 Dark", vibrate:"📳 Vibrate", reset:"🔄 Reset", export:"📥 Export (JSON)", wheel:"🎡 Wheel of Fortune", spin:"Spin!", chat:"💬 Chat", install:"📱 Install as App!", installBtn:"Install" }
-    };
-    function t(key) { return LANG[store.settings.lang||'ru'][key] || key; }
+        const LANG = {
+            ru: { characters:"👩‍🦰 Выбери девушку", situations:"🎬 Ситуация", difficulty:"⚙️ Сложность", start:"🔥 Начать сцену!", back:"← Назад", next:"Далее →", createPartner:"➕ Создать персонажа", createSituation:"➕ Создать ситуацию", album:"🖼️ Альбом", empty:"📭 Пусто", stats:"📊 Статистика", scenes:"🔥 Сцен", orgasms:"💦 Оргазмов", coins:"🪙 Монет", achievements:"🏆 Достижения", daily:"📅 Ежедневные задания", shop:"🛒 Магазин", settings:"⚙️ Настройки", dark:"🌙 Тёмная", vibrate:"📳 Вибрация", reset:"🔄 Сбросить", export:"📥 Экспорт (JSON)", exportGif:"🎬 Экспорт GIF", wheel:"🎡 Колесо фортуны", spin:"Крутить!", timer:"⏱ Таймер сцены", heatmap:"🔥 Тепловая карта", quests:"📜 Квесты" },
+            en: { characters:"👩‍🦰 Choose a girl", situations:"🎬 Situation", difficulty:"⚙️ Difficulty", start:"🔥 Start Scene!", back:"← Back", next:"Next →", createPartner:"➕ Create Character", createSituation:"➕ Create Situation", album:"🖼️ Album", empty:"📭 Empty", stats:"📊 Statistics", scenes:"🔥 Scenes", orgasms:"💦 Orgasms", coins:"🪙 Coins", achievements:"🏆 Achievements", daily:"📅 Daily Tasks", shop:"🛒 Shop", settings:"⚙️ Settings", dark:"🌙 Dark", vibrate:"📳 Vibrate", reset:"🔄 Reset", export:"📥 Export (JSON)", exportGif:"🎬 Export GIF", wheel:"🎡 Wheel of Fortune", spin:"Spin!", timer:"⏱ Scene Timer", heatmap:"🔥 Heatmap", quests:"📜 Quests" }
+        };
+        function t(key) { return LANG[store.settings.lang||'ru'][key] || key; }
 
-    // PWA
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('install-banner').style.display = 'block'; });
-    function installPWA() { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById('install-banner').style.display = 'none'; }); } }
-    if (window.matchMedia('(display-mode: standalone)').matches) document.getElementById('install-banner').style.display = 'none';
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const particles = [];
+        for (let i = 0; i < 30; i++) particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 1, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 });
+        function animateParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > canvas.width) p.vx *= -1; if (p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fillStyle = 'rgba(131,56,236,0.15)'; ctx.fill(); }); requestAnimationFrame(animateParticles); }
+        animateParticles();
 
-    // Видео-фон (свой для каждой девушки)
-    const VIDEO_BG = { kira:"", alisa:"", valeria:"", dasha:"", margo:"", zara:"", katya:"", lolita:"", diana:"" };
-    function setVideoBg(key) { const v=document.getElementById('video-bg'); if(VIDEO_BG[key]){ v.src=VIDEO_BG[key]; v.style.display='block'; }else{ v.style.display='none'; } }
+        function playSound(type) { if (store.settings.vibrate) { try { const ctx2 = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx2.createOscillator(); const gain = ctx2.createGain(); osc.connect(gain); gain.connect(ctx2.destination); if (type === 'moan') { osc.frequency.value = 300; gain.gain.value = 0.1; osc.type = 'sine'; osc.start(); osc.stop(ctx2.currentTime + 0.3); } else if (type === 'orgasm') { osc.frequency.value = 600; gain.gain.value = 0.2; osc.type = 'sawtooth'; osc.start(); osc.stop(ctx2.currentTime + 0.5); } } catch(e) {} } if (tg.HapticFeedback) { if (type === 'moan') tg.HapticFeedback.impactOccurred('medium'); else if (type === 'orgasm') tg.HapticFeedback.notificationOccurred('success'); } }
 
-    // Частицы
-    const canvas = document.getElementById('particles');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    const particles = [];
-    for (let i = 0; i < 30; i++) particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 1, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 });
-    function animateParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > canvas.width) p.vx *= -1; if (p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fillStyle = 'rgba(131,56,236,0.15)'; ctx.fill(); }); requestAnimationFrame(animateParticles); }
-    animateParticles();
+        function spawnHearts(x, y, count = 5) { for (let i = 0; i < count; i++) setTimeout(() => { const heart = document.createElement('div'); heart.className = 'heart'; heart.textContent = ['❤️','💜','💖','🔥','💕'][Math.floor(Math.random()*5)]; heart.style.left = (x + Math.random() * 40 - 20) + 'px'; heart.style.top = (y + Math.random() * 20 - 10) + 'px'; document.body.appendChild(heart); setTimeout(() => heart.remove(), 1000); }, i * 50); }
 
-    // Звуки
-    function playSound(type) { if (!store.settings.vibrate) return; try { const ctx2 = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx2.createOscillator(); const gain = ctx2.createGain(); osc.connect(gain); gain.connect(ctx2.destination); if (type === 'moan') { osc.frequency.value = 300; gain.gain.value = 0.1; osc.type = 'sine'; osc.start(); osc.stop(ctx2.currentTime + 0.3); } else if (type === 'orgasm') { osc.frequency.value = 600; gain.gain.value = 0.2; osc.type = 'sawtooth'; osc.start(); osc.stop(ctx2.currentTime + 0.5); } } catch(e) {} }
+        // Таймер
+        function startTimer() { store.timer.start = Date.now(); store.timer.elapsed = 0; save(); }
+        function stopTimer() { if (store.timer.start) { store.timer.elapsed = Math.floor((Date.now() - store.timer.start) / 1000); if (store.timer.elapsed > store.records.bestTime) store.records.bestTime = store.timer.elapsed; store.timer.start = null; save(); renderStats(); } }
 
-    function spawnHearts(x, y, count = 5) { for (let i = 0; i < count; i++) setTimeout(() => { const heart = document.createElement('div'); heart.className = 'heart'; heart.textContent = ['❤️','💜','💖','🔥','💕'][Math.floor(Math.random()*5)]; heart.style.left = (x + Math.random() * 40 - 20) + 'px'; heart.style.top = (y + Math.random() * 20 - 10) + 'px'; document.body.appendChild(heart); setTimeout(() => heart.remove(), 1000); }, i * 50); }
+        // Тепловая карта
+        function heatClick(e, partnerKey) { const card = e.target.closest('.card-img'); if (!card) return; const rect = card.getBoundingClientRect(); const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(0); const y = ((e.clientY - rect.top) / rect.height * 100).toFixed(0); const key = `${x},${y}`; if (!store.heatmap[partnerKey]) store.heatmap[partnerKey] = {}; store.heatmap[partnerKey][key] = (store.heatmap[partnerKey][key] || 0) + 1; save(); }
+        function renderHeatmap(partnerKey) { let h = `<h2>${t('heatmap')} — ${PARTNERS[partnerKey]?.name||partnerKey}</h2><div class="heatmap" id="heatmap-display"></div>`; showModal(`${t('heatmap')}`, h); setTimeout(() => { const display = document.getElementById('heatmap-display'); if (!display) return; const data = store.heatmap[partnerKey] || {}; const max = Math.max(...Object.values(data), 1); for (const [pos, count] of Object.entries(data)) { const [x, y] = pos.split(','); const dot = document.createElement('div'); dot.className = 'heat-dot'; dot.style.left = x + '%'; dot.style.top = y + '%'; dot.style.width = dot.style.height = (10 + count / max * 20) + 'px'; display.appendChild(dot); } }, 100); }
 
-    // Фото девушек (заглушки — будут заменены на реальные фото из бота)
-    const PHOTOS = { kira:"", alisa:"", valeria:"", dasha:"", margo:"", zara:"", katya:"", lolita:"", diana:"" };
+        // Push
+        function schedulePush() { const delay = 30 + Math.floor(Math.random() * 60); setTimeout(() => { if (tg.showPopup) { tg.showPopup({ title: '💋 Кира соскучилась!', message: 'Твоя девушка ждёт продолжения. Зайди в бот и начни новую сцену.', buttons: [{ type: 'ok' }] }); } }, delay * 1000); }
 
-    const PARTNERS = { kira:{emoji:"🖤",name:"Кира",desc:"Панк-рокерша, 24 года.",img:"🖤",bg:"#1a0a0a"}, alisa:{emoji:"🎀",name:"Алиса",desc:"Студентка, 19 лет.",img:"🎀",bg:"#0a1a0a"}, valeria:{emoji:"💋",name:"Валерия",desc:"Бизнес-леди, 38 лет.",img:"💋",bg:"#1a0a1a"}, dasha:{emoji:"💉",name:"Даша",desc:"Медсестра, 25 лет.",img:"💉",bg:"#0a0a1a"}, margo:{emoji:"⛓️",name:"Марго",desc:"Доминатрикс, 30 лет.",img:"⛓️",bg:"#1a1a0a"}, zara:{emoji:"🔥",name:"Зара",desc:"Танцовщица, 27 лет.",img:"🔥",bg:"#1a0a0a"}, katya:{emoji:"🎮",name:"Катя",desc:"Стримерша, 21 год.",img:"🎮",bg:"#0a1a1a"}, lolita:{emoji:"💎",name:"Лолита",desc:"Порно-звезда, 29 лет.",img:"💎",bg:"#1a1a1a"}, diana:{emoji:"🦋",name:"Диана",desc:"Искусительница, 19 лет.",img:"🦋",bg:"#0a0a0a"} };
-    const SITUATIONS = { kira:["После концерта","В гараже","В баре","Тату-салон","Под дождём","На крыше"], alisa:["В библиотеке","В лифте","Репетитор","Экзамен","Ночной кинотеатр","В парке осенью"], valeria:["Собеседование","В душе","В опере","Спа-салон","Бизнес-ужин","Примерочная"], dasha:["Ночное дежурство","Осмотр","В скорой","Процедурный кабинет","После смены","Медицинский осмотр на дому"], margo:["Посвящение","Сломанный стул","Инструктаж","Тронный зал","Клетка","Псарня"], zara:["Приватный танец","Карнавал","Репетиция","Пляж на закате","Фотосессия","После шоу"], katya:["Донат на стриме","Косплей","Хоррор","Комната отдыха","Игровой турнир","Ночной стрим"], lolita:["Кастинг","Встреча с фанатом","Стиральщик","Бассейн","Лимузин","Секс-шоп"], diana:["Аукцион","Мастер-класс","Отель","Посольский приём","Картинная галерея","Яхта"] };
-    const DIFFICULTIES = [{key:"passion",name:"🔥 Страсть",desc:"Шкала до 500"},{key:"easy",name:"💛 Упрощённый",desc:"×2 доверие"},{key:"normal",name:"📖 Обычный",desc:"Классика"}];
-    const ACHIEVEMENTS = [{id:"first_scene",name:"Первая сцена",desc:"Начать первую сцену",icon:"🎬"},{id:"first_orgasm",name:"Первый оргазм",desc:"Довести до оргазма",icon:"💦"},{id:"ten_scenes",name:"10 сцен",desc:"Провести 10 сцен",icon:"🔥"},{id:"fifty_scenes",name:"50 сцен",desc:"Провести 50 сцен",icon:"💯"},{id:"all_girls",name:"Коллекционер",desc:"Попробовать всех 9 девушек",icon:"👩‍🦰"},{id:"all_poses",name:"Мастер поз",desc:"Использовать все позы",icon:"🧘"}];
-    const DAILY_TASKS = [{id:"gift",name:"Подарить цветы",desc:"Нажать 💐",reward:10},{id:"compliment",name:"Сделать комплимент",desc:"Нажать 💬",reward:10},{id:"new_pose",name:"Новая поза",desc:"Новая поза",reward:20},{id:"orgasm",name:"Оргазм",desc:"Довести до оргазма",reward:30}];
+        // GIF экспорт
+        function exportAlbumAsGif() { if (store.album.length < 2) return alert('Нужно минимум 2 фото'); const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 256; const ctx = canvas.getContext('2d'); const gif = new GIF({ workers: 2, quality: 10, width: 256, height: 256 }); let loaded = 0; store.album.forEach(url => { const img = new Image(); img.crossOrigin = 'anonymous'; img.onload = () => { ctx.drawImage(img, 0, 0, 256, 256); gif.addFrame(ctx, { delay: 500 }); loaded++; if (loaded === store.album.length) { gif.on('finished', blob => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'album.gif'; a.click(); }); gif.render(); } }; img.src = url; }); }
 
-    let sp=null, ss=0, sd="passion";
+        const PHOTOS = { kira:"", alisa:"", valeria:"", dasha:"", margo:"", zara:"", katya:"", lolita:"", diana:"" };
+        const PARTNERS = { kira:{emoji:"🖤",name:"Кира",desc:"Панк-рокерша, 24 года.",img:"🖤",bg:"#1a0a0a"}, alisa:{emoji:"🎀",name:"Алиса",desc:"Студентка, 19 лет.",img:"🎀",bg:"#0a1a0a"}, valeria:{emoji:"💋",name:"Валерия",desc:"Бизнес-леди, 38 лет.",img:"💋",bg:"#1a0a1a"}, dasha:{emoji:"💉",name:"Даша",desc:"Медсестра, 25 лет.",img:"💉",bg:"#0a0a1a"}, margo:{emoji:"⛓️",name:"Марго",desc:"Доминатрикс, 30 лет.",img:"⛓️",bg:"#1a1a0a"}, zara:{emoji:"🔥",name:"Зара",desc:"Танцовщица, 27 лет.",img:"🔥",bg:"#1a0a0a"}, katya:{emoji:"🎮",name:"Катя",desc:"Стримерша, 21 год.",img:"🎮",bg:"#0a1a1a"}, lolita:{emoji:"💎",name:"Лолита",desc:"Порно-звезда, 29 лет.",img:"💎",bg:"#1a1a1a"}, diana:{emoji:"🦋",name:"Диана",desc:"Искусительница, 19 лет.",img:"🦋",bg:"#0a0a0a"} };
+        const SITUATIONS = { kira:["После концерта","В гараже","В баре","Тату-салон","Под дождём","На крыше"], alisa:["В библиотеке","В лифте","Репетитор","Экзамен","Ночной кинотеатр","В парке осенью"], valeria:["Собеседование","В душе","В опере","Спа-салон","Бизнес-ужин","Примерочная"], dasha:["Ночное дежурство","Осмотр","В скорой","Процедурный кабинет","После смены","Медицинский осмотр на дому"], margo:["Посвящение","Сломанный стул","Инструктаж","Тронный зал","Клетка","Псарня"], zara:["Приватный танец","Карнавал","Репетиция","Пляж на закате","Фотосессия","После шоу"], katya:["Донат на стриме","Косплей","Хоррор","Комната отдыха","Игровой турнир","Ночной стрим"], lolita:["Кастинг","Встреча с фанатом","Стиральщик","Бассейн","Лимузин","Секс-шоп"], diana:["Аукцион","Мастер-класс","Отель","Посольский приём","Картинная галерея","Яхта"] };
+        const DIFFICULTIES = [{key:"passion",name:"🔥 Страсть",desc:"Шкала до 500"},{key:"easy",name:"💛 Упрощённый",desc:"×2 доверие"},{key:"normal",name:"📖 Обычный",desc:"Классика"}];
+        const ACHIEVEMENTS = [{id:"first_scene",name:"Первая сцена",desc:"Начать первую сцену",icon:"🎬"},{id:"first_orgasm",name:"Первый оргазм",desc:"Довести до оргазма",icon:"💦"},{id:"ten_scenes",name:"10 сцен",desc:"Провести 10 сцен",icon:"🔥"},{id:"fifty_scenes",name:"50 сцен",desc:"Провести 50 сцен",icon:"💯"},{id:"all_girls",name:"Коллекционер",desc:"Попробовать всех 9 девушек",icon:"👩‍🦰"},{id:"all_poses",name:"Мастер поз",desc:"Использовать все позы",icon:"🧘"}];
+        const DAILY_TASKS = [{id:"gift",name:"Подарить цветы",desc:"Нажать 💐",reward:10},{id:"compliment",name:"Сделать комплимент",desc:"Нажать 💬",reward:10},{id:"new_pose",name:"Новая поза",desc:"Новая поза",reward:20},{id:"orgasm",name:"Оргазм",desc:"Довести до оргазма",reward:30}];
 
-    function showModal(title, content) { document.getElementById('modal-container').innerHTML = `<div class="modal-overlay" onclick="this.remove()"><div class="modal" onclick="event.stopPropagation()"><h3>${title}</h3>${content}<button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">${t('back')}</button></div></div>`; }
-    function getAllPartners() { const all = {...PARTNERS}; store.customPartners.forEach((p,i) => { all['custom_'+i] = p; }); return all; }
-    function showPage(id){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-    
-    function renderCharacters(){ const allPartners = getAllPartners(); let h=`<h2>${t('characters')}</h2><div class="cards">`; for(let[k,p]of Object.entries(allPartners)) h+=`<div class="card ${sp===k?'selected':''}" onclick="selectPartner('${k}',event)" style="background:${p.bg||'#1a1a1a'}"><div class="card-img" style="background-image:url(${PHOTOS[k]||''})">${PHOTOS[k]?'':p.img}</div><div class="card-name">${p.emoji||''} ${p.name}</div><div class="card-desc">${p.desc}</div></div>`; h+='</div>'; h+=`<button class="btn btn-secondary" onclick="showCreatePartner()">${t('createPartner')}</button>`; if(sp) h+=`<button class="btn btn-primary" onclick="goToSituations()">${t('next')}</button>`; document.getElementById('page-characters').innerHTML=h; }
-    function selectPartner(k,e){ sp=k; if(e) { spawnHearts(e.clientX,e.clientY,8); playSound('moan'); } setVideoBg(k); renderCharacters(); }
-    function showCreatePartner(){ showModal(t('createPartner'),`<input id="cp-name" placeholder="Имя"><input id="cp-emoji" placeholder="Эмодзи" value="🦊"><textarea id="cp-desc" placeholder="Описание" rows="3"></textarea><input id="cp-img" placeholder="Картинка" value="🦊"><button class="btn btn-primary" onclick="createPartner()">${t('createPartner')}</button>`); }
-    function createPartner(){ const name=document.getElementById('cp-name').value||'Новая',emoji=document.getElementById('cp-emoji').value||'🦊',desc=document.getElementById('cp-desc').value||'Свой',img=document.getElementById('cp-img').value||'🦊'; store.customPartners.push({emoji,name,desc,img,bg:'#1a1a1a'}); save(); document.querySelector('.modal-overlay').remove(); renderCharacters(); }
-    function goToSituations(){ if(!sp)return; showPage('page-situations'); renderSituations(); }
-    function renderSituations(){ const allPartners = getAllPartners(); let s=SITUATIONS[sp]||store.customSituations[sp]||["Стандартная"]; let h=`<h2>${t('situations')}</h2><p style="color:#999;">${allPartners[sp]?.emoji||''} ${allPartners[sp]?.name||sp}</p>`; s.forEach((n,i)=>{ h+=`<div class="sit-card ${ss===i?'selected':''}" onclick="selectSituation(${i},event)"><div class="sit-name">${n}</div></div>` }); h+=`<button class="btn btn-secondary" onclick="showCreateSituation()">${t('createSituation')}</button>`; h+=`<button class="btn btn-secondary" onclick="showPage('page-characters');renderCharacters();">${t('back')}</button><button class="btn btn-primary" onclick="goToDifficulty()">${t('next')}</button>`; document.getElementById('page-situations').innerHTML=h; }
-    function selectSituation(i,e){ ss=i; if(e) { spawnHearts(e.clientX,e.clientY,3); playSound('moan'); } renderSituations(); }
-    function showCreateSituation(){ showModal(t('createSituation'),`<input id="cs-name" placeholder="Название"><button class="btn btn-primary" onclick="createSituation()">${t('createSituation')}</button>`); }
-    function createSituation(){ const name=document.getElementById('cs-name').value||'Новая'; if(!store.customSituations[sp])store.customSituations[sp]=[]; store.customSituations[sp].push(name); save(); document.querySelector('.modal-overlay').remove(); renderSituations(); }
-    function goToDifficulty(){ showPage('page-difficulty'); renderDifficulty(); }
-    function renderDifficulty(){ let h=`<h2>${t('difficulty')}</h2>`; DIFFICULTIES.forEach(d=>{ h+=`<div class="sit-card ${sd===d.key?'selected':''}" onclick="selectDifficulty('${d.key}')"><div class="sit-name">${d.name}</div><div style="font-size:11px;color:#999;">${d.desc}</div></div>` }); h+=`<button class="btn btn-secondary" onclick="goToSituations()">${t('back')}</button><button class="btn btn-primary" onclick="startScene()">${t('start')}</button>`; document.getElementById('page-difficulty').innerHTML=h; }
-    function selectDifficulty(k){ sd=k; renderDifficulty(); }
-    function startScene(){ if(!sp)return; playSound('orgasm'); tg.sendData(JSON.stringify({action:"start_scene",partner:sp,situation:ss,difficulty:sd})); tg.close(); }
-    
-    // Альбом
-    function renderAlbum(){ let a=store.album,h=`<h2>${t('album')}</h2>`; if(!a.length)h+=`<p style="color:#666;text-align:center;padding:40px;">${t('empty')}</p>`; else{ h+='<div class="album-grid">'; a.forEach((f,i)=>{ h+=`<div class="album-item" style="background-image:url(${f})" onclick="removeFromAlbum(${i})"></div>` }); h+='</div>'; h+=`<button class="btn btn-secondary" onclick="exportAlbum()">${t('export')}</button>`; } document.getElementById('page-album').innerHTML=h; }
-    function removeFromAlbum(i){ store.album.splice(i,1); save(); renderAlbum(); }
-    function exportAlbum(){ const blob=new Blob([JSON.stringify(store.album,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='album.json'; a.click(); }
-    
-    // Статистика
-    function renderStats(){ let s=store.stats,h=`<h2>${t('stats')}</h2>`; if(!Object.keys(s).length)h+=`<p style="color:#666;text-align:center;padding:40px;">${t('empty')}</p>`; else{ let sc=0,org=0; for(let[k,v]of Object.entries(s)){ sc+=v.scenes||0; org+=v.orgasms||0; } h+=`<div class="stat-row"><span>${t('scenes')}</span><span>${sc}</span></div><div class="stat-row"><span>${t('orgasms')}</span><span>${org}</span></div><div class="stat-row"><span>${t('coins')}</span><span>${store.coins}</span></div><div class="stat-row"><span>🖼️ Альбом</span><span>${store.album.length}</span></div>`; // Топ девушек
-            let top=Object.entries(s).sort((a,b)=>b[1].scenes-a[1].scenes).slice(0,3); if(top.length){ h+='<h3 style="margin-top:12px;">🏆 Топ девушек</h3>'; top.forEach(([k,v],i)=>{ h+=`<div class="stat-row"><span>${i+1}. ${PARTNERS[k]?.emoji||''} ${PARTNERS[k]?.name||k}</span><span>${v.scenes} сцен</span></div>` }); } } document.getElementById('page-stats').innerHTML=h; }
-    
-    // Достижения
-    function renderAchievements(){ let h=`<h2>${t('achievements')}</h2>`; ACHIEVEMENTS.forEach(a=>{ let done=store.achievements[a.id]; h+=`<div class="ach-card ${done?'done':''}"><div class="ach-icon">${done?a.icon:'🔒'}</div><div><b>${a.name}</b><div style="font-size:11px;color:#999;">${a.desc}</div></div></div>` }); document.getElementById('page-achievements').innerHTML=h; }
-    
-    // Ежедневные
-    function renderDaily(){ let today=new Date().toDateString(); if(store.daily.date!==today){ store.daily={date:today,tasks:[]}; save(); } let h=`<h2>${t('daily')}</h2>`; DAILY_TASKS.forEach(t=>{ let done=store.daily.tasks.includes(t.id); h+=`<div class="task-card ${done?'done':''}"><div><b>${t.name}</b><div style="font-size:11px;color:#999;">${t.desc} (+${t.reward}🪙)</div></div>${done?'<span style="color:#4CAF50;">✓</span>':'<button class="btn btn-primary" style="width:auto;padding:6px 12px;font-size:12px;margin:0" onclick="claimTask(\''+t.id+'\','+t.reward+')">Забрать</button>'}</div>` }); document.getElementById('page-daily').innerHTML=h; }
-    function claimTask(id,r){ if(store.daily.tasks.includes(id))return; store.daily.tasks.push(id); store.coins+=r; save(); renderDaily(); renderStats(); }
-    
-    // Магазин
-    const SHOP=[{id:"s1",name:"Эксклюзивная ситуация",price:50},{id:"s2",name:"Новый голос",price:30},{id:"s3",name:"Бонусная поза",price:20}];
-    function renderShop(){ let h=`<h2>${t('shop')}</h2><p>🪙 ${store.coins}</p>`; SHOP.forEach(item=>{ let o=store.inventory.includes(item.id); h+=`<div class="shop-item"><div><b>${item.name}</b></div>${o?'<span style="color:#4CAF50;">✓</span>':'<button class="btn btn-primary" style="width:auto;padding:6px 12px;font-size:12px;margin:0" onclick="buy(\''+item.id+'\','+item.price+')">${item.price} 🪙</button>'}</div>` }); document.getElementById('page-shop').innerHTML=h; }
-    function buy(id,p){ if(store.coins<p)return alert('Мало монет!'); store.coins-=p; store.inventory.push(id); save(); renderShop(); renderStats(); }
-    
-    // Колесо фортуны
-    function renderWheel(){ let h=`<h2>${t('wheel')}</h2><div class="wheel-container"><div class="wheel-btn" id="wheel-btn" onclick="spinWheel()">🎡</div><p id="wheel-result" style="margin-top:12px;font-size:18px;"></p></div><button class="btn btn-primary" onclick="spinWheel()">${t('spin')}</button>`; document.getElementById('page-wheel').innerHTML=h; }
-    function spinWheel(){ const allPartners = getAllPartners(); const keys=Object.keys(allPartners); const r=keys[Math.floor(Math.random()*keys.length)]; const p=allPartners[r]; document.getElementById('wheel-result').textContent=`${p.emoji||''} ${p.name}`; sp=r; playSound('moan'); setTimeout(()=>{ goToSituations(); },1000); }
-    
-    // Настройки
-    function renderSettings(){ let h=`<h2>${t('settings')}</h2>`; h+=`<div class="setting-row"><span>🌙/☀️ Тема</span><div class="toggle ${store.settings.dark?'on':''}" onclick="tog('dark');document.body.classList.toggle('light',!store.settings.dark);"></div></div>`; h+=`<div class="setting-row"><span>${t('vibrate')}</span><div class="toggle ${store.settings.vibrate?'on':''}" onclick="tog('vibrate')"></div></div>`; h+=`<div class="setting-row"><span>Язык</span><div class="lang-switch"><button class="${store.settings.lang==='ru'?'active':''}" onclick="setLang('ru')">RU</button><button class="${store.settings.lang==='en'?'active':''}" onclick="setLang('en')">EN</button></div></div>`; h+=`<button class="btn btn-secondary" onclick="resetAll()">${t('reset')}</button>`; document.getElementById('page-settings').innerHTML=h; }
-    function tog(k){ store.settings[k]=!store.settings[k]; save(); renderSettings(); }
-    function setLang(l){ store.settings.lang=l; save(); renderAll(); }
-    function resetAll(){ if(confirm('Сбросить?')){ store.coins=100; store.album=[]; store.stats={}; store.achievements={}; store.daily={date:"",tasks:[]}; store.inventory=[]; store.level=1; store.xp=0; store.customPartners=[]; store.customSituations={}; store.chatHistory=[]; save(); renderAll(); } }
+        // Квесты
+        const QUESTS = [
+            {id:"q1",name:"Романтик",desc:"Подари цветы → Поцелуй → Комплимент",steps:["gift","kiss","compliment"],reward:50},
+            {id:"q2",name:"Соблазнитель",desc:"Кофе → Ласки → Раздеть",steps:["coffee","caress","undress"],reward:70},
+            {id:"q3",name:"Любовник",desc:"Поцелуй → Куни → Оргазм",steps:["kiss","cuni","orgasm"],reward:100},
+        ];
+        function initQuests() { if (!store.quests) store.quests = {}; QUESTS.forEach(q => { if (!store.quests[q.id]) store.quests[q.id] = { active: false, progress: [], completed: false }; }); save(); }
+        initQuests();
+        function completeQuestStep(step) { QUESTS.forEach(q => { if (store.quests[q.id].active && !store.quests[q.id].completed) { const nextStep = q.steps[store.quests[q.id].progress.length]; if (nextStep === step) { store.quests[q.id].progress.push(step); if (store.quests[q.id].progress.length === q.steps.length) { store.quests[q.id].completed = true; store.coins += q.reward; alert(`Квест "${q.name}" выполнен! +${q.reward}🪙`); } save(); renderQuests(); } } }); }
+        function renderQuests() { let h = `<h2>${t('quests')}</h2>`; QUESTS.forEach(q => { const qd = store.quests[q.id]; const progress = qd.progress.length; const total = q.steps.length; h += `<div class="task-card ${qd.completed?'done':''}"><div><b>${q.name}</b><div style="font-size:11px;color:#999;">${q.desc} (${progress}/${total})</div><div class="xp-bar"><div class="xp-fill" style="width:${(progress/total)*100}%"></div></div></div>${qd.completed?'<span style="color:#4CAF50;">✓</span>':qd.active?'<span style="color:#FFD700;">⌛</span>':'<button class="btn btn-primary" style="width:auto;padding:6px 12px;font-size:12px;margin:0" onclick="startQuest(\''+q.id+'\')">Старт</button>'}</div>`; }); document.getElementById('page-quests').innerHTML = h; }
+        function startQuest(id) { store.quests[id].active = true; store.quests[id].progress = []; save(); renderQuests(); }
 
-    // Чат
-    function renderChatHistory(){ const msgs=document.getElementById('chat-messages'); msgs.innerHTML=''; store.chatHistory.forEach(m=>{ msgs.innerHTML+=`<div class="chat-msg ${m.role}">${m.text}</div>` }); msgs.scrollTop=msgs.scrollHeight; }
-    function sendChat(){ const input=document.getElementById('chat-input'); const text=input.value.trim(); if(!text)return; store.chatHistory.push({role:'user',text}); document.getElementById('chat-input').value=''; save(); renderChatHistory(); tg.sendData(JSON.stringify({action:"chat",text:text})); }
+        let sp=null, ss=0, sd="passion";
 
-    function renderAll(){ renderCharacters(); renderAlbum(); renderStats(); renderAchievements(); renderDaily(); renderShop(); renderWheel(); renderSettings(); }
+        function showModal(title, content) { document.getElementById('modal-container').innerHTML = `<div class="modal-overlay" onclick="this.remove()"><div class="modal" onclick="event.stopPropagation()"><h3>${title}</h3>${content}<button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">${t('back')}</button></div></div>`; }
+        function getAllPartners() { const all = {...PARTNERS}; store.customPartners.forEach((p,i) => { all['custom_'+i] = p; }); return all; }
+        function showPage(id){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-    document.querySelectorAll('.tab').forEach(tab=>{ tab.addEventListener('click',()=>{ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); tab.classList.add('active'); let p=tab.dataset.page; showPage('page-'+p); if(p==='characters')renderCharacters(); if(p==='album')renderAlbum(); if(p==='stats')renderStats(); if(p==='achievements')renderAchievements(); if(p==='daily')renderDaily(); if(p==='shop')renderShop(); if(p==='wheel')renderWheel(); if(p==='settings')renderSettings(); }); });
-    if (!store.settings.dark) document.body.classList.add('light');
-    renderAll();
-</script>
+        function renderCharacters(){ const allPartners = getAllPartners(); let h=`<h2>${t('characters')}</h2><div class="cards">`; for(let[k,p]of Object.entries(allPartners)) h+=`<div class="card ${sp===k?'selected':''}" onclick="selectPartner('${k}',event)" style="background:${p.bg||'#1a1a1a'}"><div class="card-img" style="background-image:url(${PHOTOS[k]||''})">${PHOTOS[k]?'':p.img}</div><div class="card-name">${p.emoji||''} ${p.name}</div><div class="card-desc">${p.desc}</div></div>`; h+='</div>'; h+=`<button class="btn btn-secondary" onclick="showCreatePartner()">${t('createPartner')}</button>`; if(sp) h+=`<button class="btn btn-primary" onclick="goToSituations()">${t('next')}</button>`; document.getElementById('page-characters').innerHTML=h; }
+        function selectPartner(k,e){ sp=k; if(e) { spawnHearts(e.clientX,e.clientY,8); playSound('moan'); heatClick(e, k); } renderCharacters(); }
+        function showCreatePartner(){ showModal(t('createPartner'),`<input id="cp-name" placeholder="Имя"><input id="cp-emoji" placeholder="Эмодзи" value="🦊"><textarea id="cp-desc" placeholder="Описание" rows="3"></textarea><input id="cp-img" placeholder="Картинка" value="🦊"><button class="btn btn-primary" onclick="createPartner()">${t('createPartner')}</button>`); }
+        function createPartner(){ const name=document.getElementById('cp-name').value||'Новая',emoji=document.getElementById('cp-emoji').value||'🦊',desc=document.getElementById('cp-desc').value||'Свой',img=document.getElementById('cp-img').value||'🦊'; store.customPartners.push({emoji,name,desc,img,bg:'#1a1a1a'}); save(); document.querySelector('.modal-overlay').remove(); renderCharacters(); }
+        function goToSituations(){ if(!sp)return; showPage('page-situations'); renderSituations(); }
+        function renderSituations(){ const allPartners = getAllPartners(); let s=SITUATIONS[sp]||store.customSituations[sp]||["Стандартная"]; let h=`<h2>${t('situations')}</h2><p style="color:#999;">${allPartners[sp]?.emoji||''} ${allPartners[sp]?.name||sp}</p>`; s.forEach((n,i)=>{ h+=`<div class="sit-card ${ss===i?'selected':''}" onclick="selectSituation(${i},event)"><div class="sit-name">${n}</div></div>` }); h+=`<button class="btn btn-secondary" onclick="showCreateSituation()">${t('createSituation')}</button>`; h+=`<button class="btn btn-secondary" onclick="showPage('page-characters');renderCharacters();">${t('back')}</button><button class="btn btn-primary" onclick="goToDifficulty()">${t('next')}</button>`; document.getElementById('page-situations').innerHTML=h; }
+        function selectSituation(i,e){ ss=i; if(e) { spawnHearts(e.clientX,e.clientY,3); playSound('moan'); } renderSituations(); }
+        function showCreateSituation(){ showModal(t('createSituation'),`<input id="cs-name" placeholder="Название"><button class="btn btn-primary" onclick="createSituation()">${t('createSituation')}</button>`); }
+        function createSituation(){ const name=document.getElementById('cs-name').value||'Новая'; if(!store.customSituations[sp])store.customSituations[sp]=[]; store.customSituations[sp].push(name); save(); document.querySelector('.modal-overlay').remove(); renderSituations(); }
+        function goToDifficulty(){ showPage('page-difficulty'); renderDifficulty(); }
+        function renderDifficulty(){ let h=`<h2>${t('difficulty')}</h2>`; DIFFICULTIES.forEach(d=>{ h+=`<div class="sit-card ${sd===d.key?'selected':''}" onclick="selectDifficulty('${d.key}')"><div class="sit-name">${d.name}</div><div style="font-size:11px;color:#999;">${d.desc}</div></div>` }); h+=`<button class="btn btn-secondary" onclick="goToSituations()">${t('back')}</button><button class="btn btn-primary" onclick="startScene()">${t('start')}</button>`; document.getElementById('page-difficulty').innerHTML=h; }
+        function selectDifficulty(k){ sd=k; renderDifficulty(); }
+        function startScene(){ if(!sp)return; playSound('orgasm'); startTimer(); schedulePush(); completeQuestStep('start'); tg.sendData(JSON.stringify({action:"start_scene",partner:sp,situation:ss,difficulty:sd})); tg.close(); }
+
+        function renderAlbum(){ let a=store.album,h=`<h2>${t('album')}</h2>`; if(!a.length)h+=`<p style="color:#666;text-align:center;padding:40px;">${t('empty')}</p>`; else{ h+='<div class="album-grid">'; a.forEach((f,i)=>{ h+=`<div class="album-item" style="background-image:url(${f})" onclick="removeFromAlbum(${i})"></div>` }); h+='</div>'; h+=`<button class="btn btn-secondary" onclick="exportAlbum()">${t('export')}</button><button class="btn btn-secondary" onclick="exportAlbumAsGif()">${t('exportGif')}</button>`; } document.getElementById('page-album').innerHTML=h; }
+        function removeFromAlbum(i){ store.album.splice(i,1); save(); renderAlbum(); }
+        function exportAlbum(){ const blob=new Blob([JSON.stringify(store.album,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='album.json'; a.click(); }
+
+        function renderStats(){ let s=store.stats,h=`<h2>${t('stats')}</h2>`; if(!Object.keys(s).length)h+=`<p style="color:#666;text-align:center;padding:40px;">${t('empty')}</p>`; else{ let sc=0,org=0; for(let[k,v]of Object.entries(s)){ sc+=v.scenes||0; org+=v.orgasms||0; } h+=`<div class="stat-row"><span>${t('scenes')}</span><span>${sc}</span></div><div class="stat-row"><span>${t('orgasms')}</span><span>${org}</span></div><div class="stat-row"><span>${t('coins')}</span><span>${store.coins}</span></div><div class="stat-row"><span>🖼️ Альбом</span><span>${store.album.length}</span></div>`; if (store.records.bestTime) h+=`<div class="stat-row"><span>🏆 Рекорд</span><span>${Math.floor(store.records.bestTime/60)}:${(store.records.bestTime%60).toString().padStart(2,'0')}</span></div>`; let top=Object.entries(s).sort((a,b)=>b[1].scenes-a[1].scenes).slice(0,3); if(top.length){ h+='<h3 style="margin-top:12px;">🏆 Топ девушек</h3>'; top.forEach(([k,v],i)=>{ h+=`<div class="stat-row"><span>${i+1}. ${PARTNERS[k]?.emoji||''} ${PARTNERS[k]?.name||k}</span><span>${v.scenes} сцен</span></div>` }); } } document.getElementById('page-stats').innerHTML=h; }
+        function renderAchievements(){ let h=`<h2>${t('achievements')}</h2>`; ACHIEVEMENTS.forEach(a=>{ let done=store.achievements[a.id]; h+=`<div class="ach-card ${done?'done':''}"><div class="ach-icon">${done?a.icon:'🔒'}</div><div><b>${a.name}</b><div style="font-size:11px;color:#999;">${a.desc}</div></div></div>` }); document.getElementById('page-achievements').innerHTML=h; }
+        function renderDaily(){ let today=new Date().toDateString(); if(store.daily.date!==today){ store.daily={date:today,tasks:[]}; save(); } let h=`<h2>${t('daily')}</h2>`; DAILY_TASKS.forEach(t=>{ let done=store.daily.tasks.includes(t.id); h+=`<div class="task-card ${done?'done':''}"><div><b>${t.name}</b><div style="font-size:11px;color:#999;">${t.desc} (+${t.reward}🪙)</div></div>${done?'<span style="color:#4CAF50;">✓</span>':'<button class="btn btn-primary" style="width:auto;padding:6px 12px;font-size:12px;margin:0" onclick="claimTask(\''+t.id+'\','+t.reward+')">Забрать</button>'}</div>` }); document.getElementById('page-daily').innerHTML=h; }
+        function claimTask(id,r){ if(store.daily.tasks.includes(id))return; store.daily.tasks.push(id); store.coins+=r; save(); renderDaily(); renderStats(); }
+        const SHOP=[{id:"s1",name:"Эксклюзивная ситуация",price:50},{id:"s2",name:"Новый голос",price:30},{id:"s3",name:"Бонусная поза",price:20}];
+        function renderShop(){ let h=`<h2>${t('shop')}</h2><p>🪙 ${store.coins}</p>`; SHOP.forEach(item=>{ let o=store.inventory.includes(item.id); h+=`<div class="shop-item"><div><b>${item.name}</b></div>${o?'<span style="color:#4CAF50;">✓</span>':'<button class="btn btn-primary" style="width:auto;padding:6px 12px;font-size:12px;margin:0" onclick="buy(\''+item.id+'\','+item.price+')">${item.price} 🪙</button>'}</div>` }); document.getElementById('page-shop').innerHTML=h; }
+        function buy(id,p){ if(store.coins<p)return alert('Мало монет!'); store.coins-=p; store.inventory.push(id); save(); renderShop(); renderStats(); }
+        function renderWheel(){ let h=`<h2>${t('wheel')}</h2><div class="wheel-container"><div class="wheel-btn" onclick="spinWheel()">🎡</div><p id="wheel-result" style="margin-top:12px;font-size:18px;"></p></div><button class="btn btn-primary" onclick="spinWheel()">${t('spin')}</button>`; document.getElementById('page-wheel').innerHTML=h; }
+        function spinWheel(){ const allPartners = getAllPartners(); const keys=Object.keys(allPartners); const r=keys[Math.floor(Math.random()*keys.length)]; const p=allPartners[r]; document.getElementById('wheel-result').textContent=`${p.emoji||''} ${p.name}`; sp=r; playSound('moan'); setTimeout(()=>{ goToSituations(); },1000); }
+        function renderSettings(){ let h=`<h2>${t('settings')}</h2>`; h+=`<div class="setting-row"><span>🌙/☀️ Тема</span><div class="toggle ${store.settings.dark?'on':''}" onclick="tog('dark');document.body.classList.toggle('light',!store.settings.dark);"></div></div>`; h+=`<div class="setting-row"><span>${t('vibrate')}</span><div class="toggle ${store.settings.vibrate?'on':''}" onclick="tog('vibrate')"></div></div>`; h+=`<div class="setting-row"><span>Язык</span><div class="lang-switch"><button class="${store.settings.lang==='ru'?'active':''}" onclick="setLang('ru')">RU</button><button class="${store.settings.lang==='en'?'active':''}" onclick="setLang('en')">EN</button></div></div>`; h+=`<button class="btn btn-secondary" onclick="resetAll()">${t('reset')}</button>`; document.getElementById('page-settings').innerHTML=h; }
+        function tog(k){ store.settings[k]=!store.settings[k]; save(); renderSettings(); }
+        function setLang(l){ store.settings.lang=l; save(); renderAll(); }
+        function resetAll(){ if(confirm('Сбросить?')){ store.coins=100; store.album=[]; store.stats={}; store.achievements={}; store.daily={date:"",tasks:[]}; store.inventory=[]; store.level=1; store.xp=0; store.customPartners=[]; store.customSituations={}; store.chatHistory=[]; store.heatmap={}; store.records={bestTime:0}; store.quests={}; initQuests(); save(); renderAll(); } }
+
+        function renderChatHistory(){ const msgs=document.getElementById('chat-messages'); msgs.innerHTML=''; store.chatHistory.forEach(m=>{ msgs.innerHTML+=`<div class="chat-msg ${m.role}">${m.text}</div>` }); msgs.scrollTop=msgs.scrollHeight; }
+        function sendChat(){ const input=document.getElementById('chat-input'); const text=input.value.trim(); if(!text)return; store.chatHistory.push({role:'user',text}); document.getElementById('chat-input').value=''; save(); renderChatHistory(); tg.sendData(JSON.stringify({action:"chat",text:text})); }
+
+        function renderAll(){ renderCharacters(); renderAlbum(); renderStats(); renderAchievements(); renderDaily(); renderShop(); renderWheel(); renderQuests(); renderSettings(); }
+
+        document.querySelectorAll('.tab').forEach(tab=>{ tab.addEventListener('click',()=>{ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); tab.classList.add('active'); let p=tab.dataset.page; showPage('page-'+p); if(p==='characters')renderCharacters(); if(p==='album')renderAlbum(); if(p==='stats')renderStats(); if(p==='achievements')renderAchievements(); if(p==='daily')renderDaily(); if(p==='quests')renderQuests(); if(p==='shop')renderShop(); if(p==='wheel')renderWheel(); if(p==='settings')renderSettings(); }); });
+        if (!store.settings.dark) document.body.classList.add('light');
+        renderAll();
+    </script>
 </body>
 </html>
